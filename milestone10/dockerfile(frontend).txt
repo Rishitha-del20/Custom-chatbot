@@ -1,0 +1,29 @@
+const express = require('express');
+const cors = require('cors');
+const bodyParser = require('body-parser');
+
+const app = express();
+app.use(cors());
+app.use(bodyParser.json());
+
+let sessions = {}; // simple in-memory storage
+
+// Handle chat messages
+app.post('/api/message', (req, res) => {
+  const { sessionId, text } = req.body;
+  if (!sessions[sessionId]) sessions[sessionId] = [];
+
+  const userMessage = { sender: 'user', text };
+  const aiMessage = { sender: 'ai', text: 'This is an AI response.' };
+
+  sessions[sessionId].push(userMessage, aiMessage);
+  res.json({ messages: [userMessage, aiMessage] });
+});
+
+// Return session history
+app.get('/api/history/:sessionId', (req, res) => {
+  const sessionId = req.params.sessionId;
+  res.json({ messages: sessions[sessionId] || [] });
+});
+
+app.listen(3001, () => console.log('Server running on http://localhost:3001'));
